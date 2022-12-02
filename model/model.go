@@ -39,9 +39,15 @@ func DB_insert(BookData *BookData) {
 		}
 	}()
 
-	result, err := cli.InsertOne(ctx, BookData)
-	util.HandleError(err, "insert ex listing error")
-	fmt.Printf("%v", result)
+
+	name := DB_find(BookData.Name)
+	if name == "" {
+		_, err := cli.InsertOne(ctx, BookData)
+		util.HandleError(err, "insert ex listing error")
+		fmt.Printf("insert %s", name)
+	} else {
+		fmt.Printf("exists %s\n", name)
+	}
 }
 
 func DB_find(name string) string {

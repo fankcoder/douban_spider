@@ -43,7 +43,7 @@ func getBookHtml(url string) string {
 	return fmt.Sprintf("%s", result)
 }
 
-func clean(html string) {
+func clean(html, tag string) {
 	root, _ := htmlquery.Parse(strings.NewReader(html))
 	var x_img = "//li[@class='subject-item']/div[@class='pic']/a[@class='nbg']/img/@src"
 	img_res, _ := htmlquery.QueryAll(root, x_img)
@@ -51,14 +51,25 @@ func clean(html string) {
 	// for _, v := range img_res{
 	// 	fmt.Printf("img url:%s\n", htmlquery.InnerText(v))
 	// }
-	// var x_author = "//h2/a"
-	// aut_res, _ := htmlquery.QueryAll(root, x_author)
-	// var x_desc = "//ul[@class='subject-list']/li[@class='subject-item']/div[@class='info']/p"
-	// desc_res, _ := htmlquery.QueryAll(root, x_desc)
-	// var x_point = "//li[@class='subject-item']/div[@class='info']/div[@class='star clearfix']/span[@class='rating_nums']"
-	// point_res, _ := htmlquery.QueryAll(root, x_point)
+	var x_name = "//li[@class='subject-item']/div[@class='info']/h2/a"
+	name_res, _ := htmlquery.QueryAll(root, x_name)
+	var x_author = "//li[@class='subject-item']/div[@class='info']/div[@class='pub']"
+	aut_res, _ := htmlquery.QueryAll(root, x_author)
+	var x_desc = "//ul[@class='subject-list']/li[@class='subject-item']/div[@class='info']/p"
+	desc_res, _ := htmlquery.QueryAll(root, x_desc)
+	var x_point = "//li[@class='subject-item']/div[@class='info']/div[@class='star clearfix']/span[@class='rating_nums']"
+	point_res, _ := htmlquery.QueryAll(root, x_point)
 	for i:=0;i<len(img_res);i++ {
-		fmt.Printf("img url:%s\n", htmlquery.InnerText(img_res[i]))
+		var book_data model.BookData
+		book_data.Name = strings.TrimSpace(htmlquery.InnerText(name_res[i]))
+		book_data.Author = strings.TrimSpace(htmlquery.InnerText(aut_res[i]))
+		book_data.Describe = strings.TrimSpace(htmlquery.InnerText(desc_res[i]))
+		book_data.Tag = tag
+		book_data.Point = htmlquery.InnerText(point_res[i])
+		book_data.Image = htmlquery.InnerText(img_res[i])
+		fmt.Printf("book ,%s, %s, %s, %s, %s,\n", book_data.Name, 
+					book_data.Author, book_data.Tag, book_data.Point, book_data.Image)
+		model.DB_insert(&book_data)
 	}
 }
 
@@ -81,11 +92,14 @@ func GetBook() {
 		for i:=2;i<last_page_int+1;i++ {
 			param := fmt.Sprintf("?start=%d&type=T", 20*(i-1))
 			fmt.Printf("sub param %s\n",  param)
-			suburl := fmt.Sprintf(url, param)
+			suburl := url + param
 			fmt.Printf("sub url %s\n",  suburl)
+			_html := getBookHtml(suburl)
+			clean(_html, v.Tag)
+			break
 		}
 
-		clean(html)
+		clean(html, v.Tag)
 		time.Sleep(1e9)
 
 		break
