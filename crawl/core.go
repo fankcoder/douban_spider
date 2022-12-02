@@ -9,6 +9,7 @@ import (
 	"time"
 	"strings"
 	"strconv"
+	"rand"
 
 	// "regexp"
 
@@ -26,20 +27,16 @@ func getBookHtml(url string) string {
 	request.Header.Add("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ru;q=0.7")
 	request.Header.Add("Host", "book.douban.com")
 	request.Header.Add("Referer", "https://book.douban.com/tag/?view=type&icn=index-sorttags-all")
-	fmt.Printf("2")
 	resp, _ := client.Do(request)
-	fmt.Printf("3")
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		fmt.Printf("Error status code: %d", resp.StatusCode)
 	}
-	fmt.Printf("4")
 	result, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		// panic(err)
 		util.HandleError(err, "read error")
 	}
-	fmt.Printf("5")
 	return fmt.Sprintf("%s", result)
 }
 
@@ -47,10 +44,7 @@ func clean(html, tag string) {
 	root, _ := htmlquery.Parse(strings.NewReader(html))
 	var x_img = "//li[@class='subject-item']/div[@class='pic']/a[@class='nbg']/img/@src"
 	img_res, _ := htmlquery.QueryAll(root, x_img)
-	// fmt.Printf("res img data %v\n", img_res)
-	// for _, v := range img_res{
-	// 	fmt.Printf("img url:%s\n", htmlquery.InnerText(v))
-	// }
+
 	var x_name = "//li[@class='subject-item']/div[@class='info']/h2/a"
 	name_res, _ := htmlquery.QueryAll(root, x_name)
 	var x_author = "//li[@class='subject-item']/div[@class='info']/div[@class='pub']"
@@ -67,8 +61,8 @@ func clean(html, tag string) {
 		book_data.Tag = tag
 		book_data.Point = htmlquery.InnerText(point_res[i])
 		book_data.Image = htmlquery.InnerText(img_res[i])
-		fmt.Printf("book ,%s, %s, %s, %s, %s,\n", book_data.Name, 
-					book_data.Author, book_data.Tag, book_data.Point, book_data.Image)
+		// fmt.Printf("book ,%s, %s, %s, %s, %s,\n", book_data.Name, 
+		// 			book_data.Author, book_data.Tag, book_data.Point, book_data.Image)
 		model.DB_insert(&book_data)
 	}
 }
@@ -78,7 +72,7 @@ func GetBook() {
 	tags := model.DB_fetch_tags()
 	for _, v := range *tags {
 		url := fmt.Sprintf("https://book.douban.com/tag/%s", v.Tag)
-		fmt.Printf("res data %s\n", url)
+		// fmt.Printf("res data %s\n", url)
 		html := getBookHtml(url)
 		root, _ := htmlquery.Parse(strings.NewReader(html))
 		// fmt.Printf("res data %v\n", root)
@@ -88,7 +82,7 @@ func GetBook() {
 		last_page := page_res[len(page_res)-1]
 		last_page_int, err := strconv.Atoi(htmlquery.InnerText(last_page))
 		util.HandleError(err, "read error")
-		fmt.Printf("last page %d",  last_page_int)
+		// fmt.Printf("last page %d",  last_page_int)
 		for i:=2;i<last_page_int+1;i++ {
 			param := fmt.Sprintf("?start=%d&type=T", 20*(i-1))
 			fmt.Printf("sub param %s\n",  param)
@@ -96,12 +90,10 @@ func GetBook() {
 			fmt.Printf("sub url %s\n",  suburl)
 			_html := getBookHtml(suburl)
 			clean(_html, v.Tag)
-			break
+			time.Sleep((rand.Intn(5) +1) * time.Second)
 		}
 
 		clean(html, v.Tag)
-		time.Sleep(1e9)
-
-		break
+		time.Sleep((rand.Intn(10) +1) * time.Second)
 	}
 }
