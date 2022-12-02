@@ -44,7 +44,7 @@ func DB_insert(BookData *BookData) {
 	if name == "" {
 		_, err := cli.InsertOne(ctx, BookData)
 		util.HandleError(err, "insert ex listing error")
-		fmt.Printf("insert %s", name)
+		fmt.Printf("insert %s\n", BookData.Name)
 	} else {
 		fmt.Printf("exists %s\n", name)
 	}
@@ -63,7 +63,7 @@ func DB_find(name string) string {
 
 	one := BookData{}
 	err = cli.Find(ctx, bson.M{"name": name}).One(&one)
-	fmt.Printf("res data %s", one.Name)
+	// fmt.Printf("res data %s", one.Name)
 	return one.Name
 }
 

@@ -9,7 +9,7 @@ import (
 	"time"
 	"strings"
 	"strconv"
-	"rand"
+	"math/rand"
 
 	// "regexp"
 
@@ -90,10 +90,10 @@ func GetBook() {
 			fmt.Printf("sub url %s\n",  suburl)
 			_html := getBookHtml(suburl)
 			clean(_html, v.Tag)
-			time.Sleep((rand.Intn(5) +1) * time.Second)
+			time.Sleep(time.Duration(rand.Intn(8)) * time.Second)
 		}
 
 		clean(html, v.Tag)
-		time.Sleep((rand.Intn(10) +1) * time.Second)
+		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
 	}
 }
