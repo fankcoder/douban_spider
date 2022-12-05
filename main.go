@@ -6,5 +6,6 @@ import (
 
 func main () {
 	// crawl.GetTag()
-	crawl.GetBook()
+	// crawl.GetBook()
+	crawl.Download()
 }

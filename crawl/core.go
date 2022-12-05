@@ -70,7 +70,12 @@ func clean(html, tag string) {
 func GetBook() {
 	// var tags *[]model.TagData
 	tags := model.DB_fetch_tags()
+	num := 0
 	for _, v := range *tags {
+		if num == 0 {
+			num++
+			continue
+		}
 		url := fmt.Sprintf("https://book.douban.com/tag/%s", v.Tag)
 		// fmt.Printf("res data %s\n", url)
 		html := getBookHtml(url)
@@ -92,7 +97,7 @@ func GetBook() {
 			clean(_html, v.Tag)
 			time.Sleep(time.Duration(rand.Intn(8)) * time.Second)
 		}
-
+		num++
 		clean(html, v.Tag)
 		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
 	}

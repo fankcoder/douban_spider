@@ -67,9 +67,22 @@ func DB_find(name string) string {
 	return one.Name
 }
 
-func DB_update() {}
+func DB_fetch_by_tag(name string) *[]BookData {
+	ctx := context.Background()
+	cli, err := qmgo.Open(ctx, &qmgo.Config{Uri: uri, Database: db_name, Coll: bookcol})
+	util.HandleError(err, "connection error")
 
-func DB_delete() {}
+	defer func() {
+		if err = cli.Close(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
+	list := []BookData{}
+	err = cli.Find(ctx, bson.M{"tag": name}).All(&list)
+	return &list
+}
+
 
 func DB_insert_tag(Tags *[]TagData) {
 	ctx := context.Background()
